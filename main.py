@@ -2,6 +2,9 @@ import asyncio
 import aiohttp
 from codetiming import Timer
 
+import sys
+import data
+
 
 async def task(name, work_queue):
     timer = Timer(text=f"Task {name} elapsed time: {{:.1f}}")
@@ -10,28 +13,33 @@ async def task(name, work_queue):
         while not work_queue.empty():
             url = await work_queue.get()
             async with session.get(url) as response:
-                await response.text()
+                if response.status != 200:
+                    print(f"error on url {url}: " + str(response.status))
+                #resp = await response.text()
     timer.stop()
 
 
-async def main():
-    """
-    This is the main entry point for the program
-    """
-    # Create the queue of work
-    queues = []
+async def main(appName: str):
+    url = ""
 
-    # url = "http://localhost:7000/hello?name="  # NodeJS API on port 7000
-    # url = "http://localhost:8000/hello/"  # Python API on port 8000
-    url = "http://localhost:9000/hello?name="  # Go API on port 9000
+    if appName.lower() == "go":
+        url = "http://localhost:7000/getGemeinde?id="
+    elif appName.lower() == "nodejs":
+        url = "http://localhost:8000/getGemeinde?id="
+    elif appName.lower() == "python":
+        url = "http://localhost:9000/getGemeinde?id="
+    else:
+        raise Exception("unknown parameter")
+
+    print("Performance Test for: " + appName.lower())
+    queues = []
+    gemeindeIDs = data.getGemeindeIdList()
 
     for i in range(5):
         queues.append(asyncio.Queue())
-
         for j in range(2000):
-            await queues[i].put(url + str((i + 1) * j))
+            await queues[i].put(url + gemeindeIDs[j])
 
-    # Run the tasks
     with Timer(text="\nTotal elapsed time: {:.1f}"):
         await asyncio.gather(
             asyncio.create_task(task("1", queues[0])),
@@ -42,4 +50,10 @@ async def main():
         )
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        #asyncio.run(main(sys.argv[0]))
+        asyncio.run(main("go"))
+        #asyncio.run(main("nodejs"))
+        #asyncio.run(main("python"))
+    except Exception as e:
+        print(str(e))
