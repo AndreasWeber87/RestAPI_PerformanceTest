@@ -7,7 +7,7 @@ class Street:
         self.streetname = streetname
 
 
-def getStreetsFromCSV(filename: str, lines: int):
+def getStreetsFromCSV(filename: str, recordsCnt: int):
     if not os.path.exists(filename):
         raise Exception(f'File "{filename}" not exists!')
 
@@ -15,7 +15,7 @@ def getStreetsFromCSV(filename: str, lines: int):
 
     with open(filename, "r", encoding="utf-8") as file:
         file.readline()
-        for i in range(lines):
+        for i in range(recordsCnt):
             line = file.readline()
             columns = line.split(";")
 
