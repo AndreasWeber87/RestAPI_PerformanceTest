@@ -12,7 +12,7 @@ class Testcategory(Enum):
     DeleteTest = 4
 
 
-async def __insertTask(taskNumber: str, queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
+async def __task(taskNumber: str, queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
     timer = Timer(text=f"Task {taskNumber} elapsed time: {{:.1f}}s")
     timer.start()
     async with aiohttp.ClientSession() as session:
@@ -22,10 +22,23 @@ async def __insertTask(taskNumber: str, queue: asyncio.queues.Queue, testCat: Te
             if testCat == Testcategory.AddTest:
                 async with session.post(url, json={"skz": street.skz, "streetname": street.streetname}) as response:
                     if response.status != 201:
-                        print(f"error on data: {street}")
-
-            #resp = await response.text()
-            #print(resp)
+                        print(f"error on data: skz={street.skz}, streetname={street.streetname}")
+            elif testCat == Testcategory.ChangeTest:
+                async with session.put(url + str(street.skz), json={"streetname": street.streetname + "2"}) as response:
+                    if response.status != 200:
+                        print(f"error on data: skz={street.skz}, streetname={street.streetname}")
+            elif testCat == Testcategory.GetTest:
+                async with session.get(url + str(street.skz)) as response:
+                    if response.status != 200:
+                        print(f"error on data: skz={street.skz}, streetname={street.streetname}")
+                    else:
+                        respJson = await response.json()
+                        if respJson != {"skz": street.skz, "streetname": street.streetname + "2"}:
+                            print(f"error in json comparison on data: skz={street.skz}, streetname={street.streetname}")
+            elif testCat == Testcategory.DeleteTest:
+                async with session.delete(url + str(street.skz)) as response:
+                    if response.status != 200:
+                        print(f"error on data: skz={street.skz}, streetname={street.streetname}")
     timer.stop()
 
 
@@ -41,6 +54,12 @@ async def runTest(testCat: Testcategory, portToTest: int, streets: list, tasksCn
 
     if testCat == Testcategory.AddTest:
         url += "addStreet"
+    elif testCat == Testcategory.ChangeTest:
+        url += "changeStreet/"
+    elif testCat == Testcategory.GetTest:
+        url += "getStreet?skz="
+    elif testCat == Testcategory.DeleteTest:
+        url += "deleteStreet/"
 
     for i in range(tasksCnt):  # Create new queues for the tasks.
         queues.append(asyncio.Queue())
@@ -58,6 +77,6 @@ async def runTest(testCat: Testcategory, portToTest: int, streets: list, tasksCn
     with Timer(text="\nTotal elapsed time: {:.1f}s"):
         async with asyncio.TaskGroup() as tg:
             for i in range(tasksCnt):
-                tg.create_task(__insertTask(str(i + 1), queues[i], testCat, url))
+                tg.create_task(__task(str(i + 1), queues[i], testCat, url))
 
     printWithTime(f"{testCat.name} finished...")
