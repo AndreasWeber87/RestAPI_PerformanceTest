@@ -42,24 +42,23 @@ async def __task(taskNumber: str, queue: asyncio.queues.Queue, testCat: Testcate
     timer.stop()
 
 
-async def runTest(testCat: Testcategory, portToTest: int, streets: list, tasksCnt: int):
-    url = f'http://localhost:{portToTest}/'
+async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt: int):
     queues = []
 
     if testCat == Testcategory.AddTest:  # On the AddTest create first a new table in the database.
         async with aiohttp.ClientSession() as session:
-            async with session.post(url + "createTable") as response:
+            async with session.post(urlToTest + "createTable") as response:
                 if response.status != 201:
                     print(f"error on creating table")
 
     if testCat == Testcategory.AddTest:
-        url += "addStreet"
+        urlToTest += "addStreet"
     elif testCat == Testcategory.ChangeTest:
-        url += "changeStreet/"
+        urlToTest += "changeStreet/"
     elif testCat == Testcategory.GetTest:
-        url += "getStreet?skz="
+        urlToTest += "getStreet?skz="
     elif testCat == Testcategory.DeleteTest:
-        url += "deleteStreet/"
+        urlToTest += "deleteStreet/"
 
     for i in range(tasksCnt):  # Create new queues for the tasks.
         queues.append(asyncio.Queue())
@@ -72,11 +71,11 @@ async def runTest(testCat: Testcategory, portToTest: int, streets: list, tasksCn
             iData += 1
             iTask += 1
 
-    printWithTime(f"{testCat.name} starts...")
+    printWithTime(f"{testCat.name} on {urlToTest} starts...")
 
     with Timer(text="\nTotal elapsed time: {:.1f}s"):
         async with asyncio.TaskGroup() as tg:
             for i in range(tasksCnt):
-                tg.create_task(__task(str(i + 1), queues[i], testCat, url))
+                tg.create_task(__task(str(i + 1), queues[i], testCat, urlToTest))
 
     printWithTime(f"{testCat.name} finished...")

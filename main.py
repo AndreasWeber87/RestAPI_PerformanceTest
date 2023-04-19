@@ -18,14 +18,11 @@ def askUserWhichApiToTest():
         inp = input()
 
         if inp == "1":
-            print("Performance Test for GoAPI...")
-            return 7000
+            return "http://192.168.0.3:7000/"
         elif inp == "2":
-            print("Performance Test for NodeJsAPI...")
-            return 8000
+            return "http://192.168.0.4:8000/"
         elif inp == "3":
-            print("Performance Test for PythonAPI...")
-            return 9000
+            return "http://192.168.0.5:9000/"
 
 
 def askUserHowManyRecords():
@@ -58,10 +55,10 @@ def askUserHowManyTasks():
 
 if __name__ == "__main__":
     try:
-        portToTest = askUserWhichApiToTest()
+        urlToTest = askUserWhichApiToTest()
         recordsCnt = askUserHowManyRecords()
         tasksCnt = askUserHowManyTasks()
-        # portToTest = 10000
+        # urlToTest = "http://localhost:10000/"
         # recordsCnt = 10000
         # tasksCnt = 5
 
@@ -76,12 +73,12 @@ if __name__ == "__main__":
             inp = input()
 
             if inp == "1":
-                asyncio.run(tests.runTest(tests.Testcategory.AddTest, portToTest, streets, tasksCnt))
+                asyncio.run(tests.runTest(tests.Testcategory.AddTest, urlToTest, streets, tasksCnt))
             elif inp == "2":
-                asyncio.run(tests.runTest(tests.Testcategory.ChangeTest, portToTest, streets, tasksCnt))
+                asyncio.run(tests.runTest(tests.Testcategory.ChangeTest, urlToTest, streets, tasksCnt))
             elif inp == "3":
-                asyncio.run(tests.runTest(tests.Testcategory.GetTest, portToTest, streets, tasksCnt))
+                asyncio.run(tests.runTest(tests.Testcategory.GetTest, urlToTest, streets, tasksCnt))
             elif inp == "4":
-                asyncio.run(tests.runTest(tests.Testcategory.DeleteTest, portToTest, streets, tasksCnt))
+                asyncio.run(tests.runTest(tests.Testcategory.DeleteTest, urlToTest, streets, tasksCnt))
     except Exception:
         traceback.print_exc()
