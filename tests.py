@@ -2,6 +2,7 @@ import time
 import aiohttp
 import asyncio
 import statistics
+import asyncpg
 from enum import Enum
 from main import printWithTime
 
@@ -47,10 +48,40 @@ async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
             timeMeasurements.append((timeAfterRequest - timeBeforeRequest) / 1_000_000)  # add measurement in ms
 
 
-def outputTimeStats(timeMeasurements: list):
-    print(f"shortest response time: {round(min(timeMeasurements), 2)}ms")
-    print(f"longest response time: {round(max(timeMeasurements), 2)}ms")
-    print(f"arithmetic mean of response time: {round(statistics.mean(timeMeasurements), 2)}ms")
+async def __connectDB():
+    user = "postgres"
+    password = "xsmmsgbAMfIOIWPPBrsc"
+    host = "127.0.0.1"
+    #host = "192.168.0.2"  # container ip
+    port = "5432"
+    database = "ogd"
+
+    return await asyncpg.connect(f'postgresql://{user}:{password}@{host}:{port}/{database}')
+
+
+async def __resetDatabaseStatistics():
+    conn = await __connectDB()
+    await conn.execute('SELECT pg_stat_statements_reset();')
+    await conn.close()
+
+
+async def __getDatabaseStatistics():
+    conn = await __connectDB()
+    row = await conn.fetchrow("""select query, mean_exec_time
+from pg_stat_statements
+where query like '%public.strasse%'
+order by calls desc
+LIMIT 1;""")
+
+    await conn.close()
+    print(f"Database mean_exec_time of '{str(row[0])}': {str(row[1])}")
+    return float(row[1])
+
+
+def __outputTimeStats(timeMeasurements: list):
+    print(f"Shortest response time: {round(min(timeMeasurements), 2)}ms")
+    print(f"Longest response time: {round(max(timeMeasurements), 2)}ms")
+    print(f"Arithmetic mean of response time: {round(statistics.mean(timeMeasurements), 2)}ms")
 
     deciles = statistics.quantiles(timeMeasurements, n=10, method='exclusive')
     print(f"20% percentiles: {round(deciles[1], 2)}ms")
@@ -86,6 +117,7 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
             iData += 1
             iTask += 1
 
+    await __resetDatabaseStatistics()
     printWithTime(f"{testCat.name} on {urlToTest} starts...")
 
     async with asyncio.TaskGroup() as tg:
@@ -94,6 +126,11 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
 
     printWithTime(f"{testCat.name} finished...")
 
+    meanTimeDbQuery = await __getDatabaseStatistics()
     global timeMeasurements
-    outputTimeStats(timeMeasurements)
+
+    for measurement in timeMeasurements:
+        measurement -= meanTimeDbQuery
+
+    __outputTimeStats(timeMeasurements)
     timeMeasurements = []

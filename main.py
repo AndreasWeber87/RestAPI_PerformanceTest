@@ -3,6 +3,7 @@
 # https://docs.aiohttp.org/en/stable/client_reference.html
 # https://docs.python.org/3/library/time.html#time.perf_counter_ns
 # https://docs.python.org/3/library/statistics.html
+# https://magicstack.github.io/asyncpg/current/index.html
 # https://docs.python.org/3/library/subprocess.html
 
 import asyncio
