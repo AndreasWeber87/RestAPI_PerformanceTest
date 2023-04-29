@@ -1,8 +1,12 @@
-from codetiming import Timer
+import time
 import aiohttp
 import asyncio
+import statistics
 from enum import Enum
 from main import printWithTime
+
+
+timeMeasurements = []
 
 
 class Testcategory(Enum):
@@ -12,12 +16,11 @@ class Testcategory(Enum):
     DeleteTest = 4
 
 
-async def __task(taskNumber: str, queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
-    timer = Timer(text=f"Task {taskNumber} elapsed time: {{:.1f}}s")
-    timer.start()
+async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
     async with aiohttp.ClientSession() as session:
         while not queue.empty():
             street = await queue.get()
+            timeBeforeRequest = time.perf_counter_ns()
 
             if testCat == Testcategory.AddTest:
                 async with session.post(url, json={"skz": street.skz, "streetname": street.streetname}) as response:
@@ -39,7 +42,19 @@ async def __task(taskNumber: str, queue: asyncio.queues.Queue, testCat: Testcate
                 async with session.delete(url + str(street.skz)) as response:
                     if response.status != 200:
                         print(f"error on data: skz={street.skz}, streetname={street.streetname}")
-    timer.stop()
+
+            timeAfterRequest = time.perf_counter_ns()
+            timeMeasurements.append((timeAfterRequest - timeBeforeRequest) / 1_000_000)  # add measurement in ms
+
+
+def outputTimeStats(timeMeasurements: list):
+    print(f"shortest response time: {round(min(timeMeasurements), 2)}ms")
+    print(f"longest response time: {round(max(timeMeasurements), 2)}ms")
+    print(f"arithmetic mean of response time: {round(statistics.mean(timeMeasurements), 2)}ms")
+
+    deciles = statistics.quantiles(timeMeasurements, n=10, method='exclusive')
+    print(f"20% percentiles: {round(deciles[1], 2)}ms")
+    print(f"80% percentiles: {round(deciles[7], 2)}ms")
 
 
 async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt: int):
@@ -73,9 +88,12 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
 
     printWithTime(f"{testCat.name} on {urlToTest} starts...")
 
-    with Timer(text="\nTotal elapsed time: {:.1f}s"):
-        async with asyncio.TaskGroup() as tg:
-            for i in range(tasksCnt):
-                tg.create_task(__task(str(i + 1), queues[i], testCat, urlToTest))
+    async with asyncio.TaskGroup() as tg:
+        for i in range(tasksCnt):
+            tg.create_task(__task(queues[i], testCat, urlToTest))
 
     printWithTime(f"{testCat.name} finished...")
+
+    global timeMeasurements
+    outputTimeStats(timeMeasurements)
+    timeMeasurements = []

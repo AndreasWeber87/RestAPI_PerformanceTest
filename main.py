@@ -1,8 +1,15 @@
+# Sources:
+# https://docs.python.org/3/library/asyncio-task.html
+# https://docs.aiohttp.org/en/stable/client_reference.html
+# https://docs.python.org/3/library/time.html#time.perf_counter_ns
+# https://docs.python.org/3/library/statistics.html
+# https://docs.python.org/3/library/subprocess.html
+
 import asyncio
+from datetime import datetime
 import traceback
 import data
 import tests
-from datetime import datetime
 
 
 def printWithTime(text: str):
@@ -55,12 +62,12 @@ def askUserHowManyTasks():
 
 if __name__ == "__main__":
     try:
-        urlToTest = askUserWhichApiToTest()
-        recordsCnt = askUserHowManyRecords()
-        tasksCnt = askUserHowManyTasks()
-        # urlToTest = "http://localhost:10000/"
-        # recordsCnt = 10000
-        # tasksCnt = 5
+        #urlToTest = askUserWhichApiToTest()
+        #recordsCnt = askUserHowManyRecords()
+        #tasksCnt = askUserHowManyTasks()
+        urlToTest = "http://localhost:7000/"
+        recordsCnt = 10000
+        tasksCnt = 5
 
         streets = data.getStreetsFromCSV("STRASSE.csv", recordsCnt)
 
