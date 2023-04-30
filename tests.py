@@ -74,11 +74,12 @@ order by calls desc
 LIMIT 1;""")
 
     await conn.close()
-    print(f"Database mean_exec_time of '{str(row[0])}': {str(row[1])}")
+    print(f"Database mean_exec_time of '{str(row[0])}': {str(row[1])}ms")
     return float(row[1])
 
 
 def __outputTimeStats(timeMeasurements: list):
+    print(f"Count of requests: {str(len(timeMeasurements))}")
     print(f"Shortest response time: {round(min(timeMeasurements), 2)}ms")
     print(f"Longest response time: {round(max(timeMeasurements), 2)}ms")
     print(f"Arithmetic mean of response time: {round(statistics.mean(timeMeasurements), 2)}ms")
