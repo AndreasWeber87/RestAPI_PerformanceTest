@@ -62,12 +62,12 @@ def askUserHowManyTasks():
 
 if __name__ == "__main__":
     try:
-        #urlToTest = askUserWhichApiToTest()
-        #recordsCnt = askUserHowManyRecords()
-        #tasksCnt = askUserHowManyTasks()
-        urlToTest = "http://localhost:7000/"
-        recordsCnt = 10000
-        tasksCnt = 5
+        urlToTest = askUserWhichApiToTest()
+        recordsCnt = askUserHowManyRecords()
+        tasksCnt = askUserHowManyTasks()
+        #urlToTest = "http://localhost:7000/"
+        #recordsCnt = 100
+        #tasksCnt = 5
 
         streets = data.getStreetsFromCSV("STRASSE.csv", recordsCnt)
 

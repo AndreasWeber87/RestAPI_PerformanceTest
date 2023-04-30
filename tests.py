@@ -51,8 +51,8 @@ async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
 async def __connectDB():
     user = "postgres"
     password = "xsmmsgbAMfIOIWPPBrsc"
-    host = "127.0.0.1"
-    #host = "192.168.0.2"  # container ip
+    #host = "127.0.0.1"
+    host = "192.168.0.2"  # container ip
     port = "5432"
     database = "ogd"
 
@@ -74,8 +74,9 @@ order by calls desc
 LIMIT 1;""")
 
     await conn.close()
-    print(f"Database mean_exec_time of '{str(row[0])}': {str(row[1])}ms")
-    return float(row[1])
+    meanExecTime = float(row[1])
+    print(f"Database mean_exec_time of '{str(row[0])}': {str(round(meanExecTime, 2))}ms")
+    return meanExecTime
 
 
 def __outputTimeStats(timeMeasurements: list):
