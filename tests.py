@@ -127,6 +127,7 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
             tg.create_task(__task(queues[i], testCat, urlToTest))
 
     printWithTime(f"{testCat.name} finished...")
+    print(f"Count of tasks: {str(tasksCnt)}")
 
     meanTimeDbQuery = await __getDatabaseStatistics()
     global timeMeasurements

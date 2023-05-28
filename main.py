@@ -16,7 +16,7 @@ def printWithTime(text: str):
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')}: {text}")
 
 
-def askUserWhichApiToTest():
+def __askUserWhichApiToTest():
     while 1:
         print("On which API do you want to test the performance?")
         print("1 = GoAPI")
@@ -32,7 +32,7 @@ def askUserWhichApiToTest():
             return "http://192.168.0.5:9000/"
 
 
-def askUserHowManyRecords():
+def __askUserHowManyRecords():
     while 1:
         print("How many records do you want to use for the test?")
         inp = input()
@@ -46,7 +46,7 @@ def askUserHowManyRecords():
             pass
 
 
-def askUserHowManyTasks():
+def __askUserHowManyTasks():
     while 1:
         print("How many tasks do you want to use for the test?")
         inp = input()
@@ -62,9 +62,9 @@ def askUserHowManyTasks():
 
 if __name__ == "__main__":
     try:
-        urlToTest = askUserWhichApiToTest()
-        recordsCnt = askUserHowManyRecords()
-        tasksCnt = askUserHowManyTasks()
+        urlToTest = __askUserWhichApiToTest()
+        recordsCnt = __askUserHowManyRecords()
+        tasksCnt = __askUserHowManyTasks()
         #urlToTest = "http://localhost:7000/"
         #recordsCnt = 100
         #tasksCnt = 5
