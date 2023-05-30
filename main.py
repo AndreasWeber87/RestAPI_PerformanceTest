@@ -6,6 +6,7 @@
 # https://magicstack.github.io/asyncpg/current/index.html
 
 import asyncio
+import sys
 from datetime import datetime
 import traceback
 import data
@@ -77,15 +78,19 @@ if __name__ == "__main__":
             print("2 = ChangeTest")
             print("3 = GetTest")
             print("4 = DeleteTest")
+            print("5 = All tests")
+            print("6 = Exit")
             inp = input()
 
-            if inp == "1":
+            if inp == "1" or inp == "5":
                 asyncio.run(tests.runTest(tests.Testcategory.AddTest, urlToTest, streets, tasksCnt))
-            elif inp == "2":
+            if inp == "2" or inp == "5":
                 asyncio.run(tests.runTest(tests.Testcategory.ChangeTest, urlToTest, streets, tasksCnt))
-            elif inp == "3":
+            if inp == "3" or inp == "5":
                 asyncio.run(tests.runTest(tests.Testcategory.GetTest, urlToTest, streets, tasksCnt))
-            elif inp == "4":
+            if inp == "4" or inp == "5":
                 asyncio.run(tests.runTest(tests.Testcategory.DeleteTest, urlToTest, streets, tasksCnt))
+            if inp == "6":
+                sys.exit()
     except Exception:
         traceback.print_exc()

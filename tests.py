@@ -8,6 +8,7 @@ from main import printWithTime
 
 
 timeMeasurements = []
+timeMeasurementsOfAllTests = []
 
 
 class Testcategory(Enum):
@@ -87,7 +88,7 @@ def __outputTimeStats(timeMeasurements: list):
 
     deciles = statistics.quantiles(timeMeasurements, n=10, method='exclusive')
     print(f"20% percentiles: {round(deciles[1], 2)}ms")
-    print(f"80% percentiles: {round(deciles[7], 2)}ms")
+    print(f"80% percentiles: {round(deciles[7], 2)}ms\n")
 
 
 async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt: int):
@@ -131,9 +132,14 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
 
     meanTimeDbQuery = await __getDatabaseStatistics()
     global timeMeasurements
+    global timeMeasurementsOfAllTests
 
     for measurement in timeMeasurements:
         measurement -= meanTimeDbQuery
 
     __outputTimeStats(timeMeasurements)
+
+    print("Measurements of all tests since program start:")
+    timeMeasurementsOfAllTests += timeMeasurements
+    __outputTimeStats(timeMeasurementsOfAllTests)
     timeMeasurements = []
