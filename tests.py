@@ -7,8 +7,8 @@ from enum import Enum
 from main import printWithTime
 
 
-timeMeasurements = []
-timeMeasurementsOfAllTests = []
+timeMeasurementsCurrTest = []  # measurements of the current test
+allTimeMeasurements = []
 
 
 class Testcategory(Enum):
@@ -16,6 +16,12 @@ class Testcategory(Enum):
     ChangeTest = 2
     GetTest = 3
     DeleteTest = 4
+
+
+class MeasurementsOfTest:
+    timeMeasurements = []
+    elapsedTime = 0.0
+    testcategory = Testcategory.AddTest
 
 
 async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
@@ -46,14 +52,13 @@ async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
                         print(f"error on data: skz={street.skz}, streetname={street.streetname}")
 
             timeAfterRequest = time.perf_counter_ns()
-            timeMeasurements.append((timeAfterRequest - timeBeforeRequest) / 1_000_000)  # add measurement in ms
+            timeMeasurementsCurrTest.append((timeAfterRequest - timeBeforeRequest) / 1_000_000)  # add measurement in ms
 
 
 async def __connectDB():
     user = "postgres"
     password = "xsmmsgbAMfIOIWPPBrsc"
-    #host = "127.0.0.1"
-    host = "192.168.0.2"  # container ip
+    host = "192.168.0.2"
     port = "5432"
     database = "ogd"
 
@@ -80,7 +85,8 @@ LIMIT 1;""")
     return meanExecTime
 
 
-def __outputTimeStats(timeMeasurements: list):
+def __outputTimeStats(timeMeasurements: list, timeElapsed: float):
+    print(f"Total time: {str(round(timeElapsed, 2))}s")
     print(f"Count of requests: {str(len(timeMeasurements))}")
     print(f"Shortest response time: {round(min(timeMeasurements), 2)}ms")
     print(f"Longest response time: {round(max(timeMeasurements), 2)}ms")
@@ -89,6 +95,56 @@ def __outputTimeStats(timeMeasurements: list):
     deciles = statistics.quantiles(timeMeasurements, n=10, method='exclusive')
     print(f"20% percentiles: {round(deciles[1], 2)}ms")
     print(f"80% percentiles: {round(deciles[7], 2)}ms\n")
+
+
+def outputGroupedTimeStats():
+    timeMeasurementsOfAllTests = []
+    timeElapsedOfAllTests = 0.0
+
+    timeMeasurementsOfAllAddTests = []
+    timeElapsedOfAllAddTests = 0.0
+
+    timeMeasurementsOfAllChangeTests = []
+    timeElapsedOfAllChangeTests = 0.0
+
+    timeMeasurementsOfAllGetTests = []
+    timeElapsedOfAllGetTests = 0.0
+
+    timeMeasurementsOfAllDeleteTests = []
+    timeElapsedOfAllDeleteTests = 0.0
+
+    for measurement in allTimeMeasurements:
+        timeMeasurementsOfAllTests += measurement.timeMeasurements
+        timeElapsedOfAllTests += measurement.elapsedTime
+
+        if measurement.testcategory == Testcategory.AddTest:
+            timeMeasurementsOfAllAddTests += measurement.timeMeasurements
+            timeElapsedOfAllAddTests += measurement.elapsedTime
+        elif measurement.testcategory == Testcategory.ChangeTest:
+            timeMeasurementsOfAllChangeTests += measurement.timeMeasurements
+            timeElapsedOfAllChangeTests += measurement.elapsedTime
+        elif measurement.testcategory == Testcategory.GetTest:
+            timeMeasurementsOfAllGetTests += measurement.timeMeasurements
+            timeElapsedOfAllGetTests += measurement.elapsedTime
+        elif measurement.testcategory == Testcategory.DeleteTest:
+            timeMeasurementsOfAllDeleteTests += measurement.timeMeasurements
+            timeElapsedOfAllDeleteTests += measurement.elapsedTime
+
+    if len(timeMeasurementsOfAllAddTests) != 0:
+        print("Measurements of all AddTests since program start:")
+        __outputTimeStats(timeMeasurementsOfAllAddTests, timeElapsedOfAllAddTests)
+    if len(timeMeasurementsOfAllChangeTests) != 0:
+        print("Measurements of all ChangeTests since program start:")
+        __outputTimeStats(timeMeasurementsOfAllChangeTests, timeElapsedOfAllChangeTests)
+    if len(timeMeasurementsOfAllGetTests) != 0:
+        print("Measurements of all GetTests since program start:")
+        __outputTimeStats(timeMeasurementsOfAllGetTests, timeElapsedOfAllGetTests)
+    if len(timeMeasurementsOfAllDeleteTests) != 0:
+        print("Measurements of all DeleteTests since program start:")
+        __outputTimeStats(timeMeasurementsOfAllDeleteTests, timeElapsedOfAllDeleteTests)
+
+    print("Measurements of all tests since program start:")
+    __outputTimeStats(timeMeasurementsOfAllTests, timeElapsedOfAllTests)
 
 
 async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt: int):
@@ -122,24 +178,31 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
 
     await __resetDatabaseStatistics()
     printWithTime(f"{testCat.name} on {urlToTest} starts...")
+    timeBeforeTest = time.perf_counter_ns()
 
     async with asyncio.TaskGroup() as tg:
         for i in range(tasksCnt):
             tg.create_task(__task(queues[i], testCat, urlToTest))
 
     printWithTime(f"{testCat.name} finished...")
+
+    timeAfterTest = time.perf_counter_ns()
+    timeElapsedOnTest = (timeAfterTest - timeBeforeTest) / 1_000_000_000
     print(f"Count of tasks: {str(tasksCnt)}")
 
     meanTimeDbQuery = await __getDatabaseStatistics()
-    global timeMeasurements
+    global timeMeasurementsCurrTest
     global timeMeasurementsOfAllTests
 
-    for measurement in timeMeasurements:
+    for measurement in timeMeasurementsCurrTest:
         measurement -= meanTimeDbQuery
 
-    __outputTimeStats(timeMeasurements)
+    __outputTimeStats(timeMeasurementsCurrTest, timeElapsedOnTest)
 
-    print("Measurements of all tests since program start:")
-    timeMeasurementsOfAllTests += timeMeasurements
-    __outputTimeStats(timeMeasurementsOfAllTests)
-    timeMeasurements = []
+    test = MeasurementsOfTest()
+    test.timeMeasurements = timeMeasurementsCurrTest
+    test.elapsedTime = timeElapsedOnTest
+    test.testcategory = testCat
+    allTimeMeasurements.append(test)
+
+    timeMeasurementsCurrTest = []

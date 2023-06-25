@@ -66,9 +66,6 @@ if __name__ == "__main__":
         urlToTest = __askUserWhichApiToTest()
         recordsCnt = __askUserHowManyRecords()
         tasksCnt = __askUserHowManyTasks()
-        #urlToTest = "http://localhost:7000/"
-        #recordsCnt = 100
-        #tasksCnt = 5
 
         streets = data.getStreetsFromCSV("STRASSE.csv", recordsCnt)
 
@@ -92,5 +89,7 @@ if __name__ == "__main__":
                 asyncio.run(tests.runTest(tests.Testcategory.DeleteTest, urlToTest, streets, tasksCnt))
             if inp == "6":
                 sys.exit()
+
+            tests.outputGroupedTimeStats()
     except Exception:
         traceback.print_exc()
