@@ -19,9 +19,10 @@ class Testcategory(Enum):
 
 
 class MeasurementsOfTest:
-    timeMeasurements = []
-    elapsedTime = 0.0
-    testcategory = Testcategory.AddTest
+    def __init__(self):
+        self.timeMeasurements = []
+        self.elapsedTime = 0.0
+        self.testcategory = Testcategory.AddTest
 
 
 async def __task(queue: asyncio.queues.Queue, testCat: Testcategory, url: str):
