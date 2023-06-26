@@ -85,7 +85,7 @@ LIMIT 1;""")
     return meanExecTime
 
 
-def __outputTimeStats(timeMeasurements: list, timeElapsed: float):
+def outputTimeStats(timeMeasurements: list, timeElapsed: float):
     print(f"Total time: {str(round(timeElapsed, 2))}s")
     print(f"Count of requests: {str(len(timeMeasurements))}")
     print(f"Shortest response time: {round(min(timeMeasurements), 2)}ms")
@@ -132,19 +132,19 @@ def outputGroupedTimeStats():
 
     if len(timeMeasurementsOfAllAddTests) != 0:
         print("Measurements of all AddTests since program start:")
-        __outputTimeStats(timeMeasurementsOfAllAddTests, timeElapsedOfAllAddTests)
+        outputTimeStats(timeMeasurementsOfAllAddTests, timeElapsedOfAllAddTests)
     if len(timeMeasurementsOfAllChangeTests) != 0:
         print("Measurements of all ChangeTests since program start:")
-        __outputTimeStats(timeMeasurementsOfAllChangeTests, timeElapsedOfAllChangeTests)
+        outputTimeStats(timeMeasurementsOfAllChangeTests, timeElapsedOfAllChangeTests)
     if len(timeMeasurementsOfAllGetTests) != 0:
         print("Measurements of all GetTests since program start:")
-        __outputTimeStats(timeMeasurementsOfAllGetTests, timeElapsedOfAllGetTests)
+        outputTimeStats(timeMeasurementsOfAllGetTests, timeElapsedOfAllGetTests)
     if len(timeMeasurementsOfAllDeleteTests) != 0:
         print("Measurements of all DeleteTests since program start:")
-        __outputTimeStats(timeMeasurementsOfAllDeleteTests, timeElapsedOfAllDeleteTests)
+        outputTimeStats(timeMeasurementsOfAllDeleteTests, timeElapsedOfAllDeleteTests)
 
     print("Measurements of all tests since program start:")
-    __outputTimeStats(timeMeasurementsOfAllTests, timeElapsedOfAllTests)
+    outputTimeStats(timeMeasurementsOfAllTests, timeElapsedOfAllTests)
 
 
 async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt: int):
@@ -192,12 +192,11 @@ async def runTest(testCat: Testcategory, urlToTest: str, streets: list, tasksCnt
 
     meanTimeDbQuery = await __getDatabaseStatistics()
     global timeMeasurementsCurrTest
-    global timeMeasurementsOfAllTests
 
     for measurement in timeMeasurementsCurrTest:
         measurement -= meanTimeDbQuery
 
-    __outputTimeStats(timeMeasurementsCurrTest, timeElapsedOnTest)
+    outputTimeStats(timeMeasurementsCurrTest, timeElapsedOnTest)
 
     test = MeasurementsOfTest()
     test.timeMeasurements = timeMeasurementsCurrTest

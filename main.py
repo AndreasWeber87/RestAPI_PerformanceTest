@@ -90,6 +90,14 @@ if __name__ == "__main__":
             if inp == "6":
                 sys.exit()
 
+            if inp == "5":
+                lastAllTests = tests.MeasurementsOfTest()
+                for i in range(1, 5):  # last 4 Tests = last "All tests"
+                    lastAllTests.elapsedTime += tests.allTimeMeasurements[-1 * i].elapsedTime
+                    lastAllTests.timeMeasurements += tests.allTimeMeasurements[-1 * i].timeMeasurements
+                print("Measurements of last \"All tests\":")
+                tests.outputTimeStats(lastAllTests.timeMeasurements, lastAllTests.elapsedTime)
+
             tests.outputGroupedTimeStats()
     except Exception:
         traceback.print_exc()
