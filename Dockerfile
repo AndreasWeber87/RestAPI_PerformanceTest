@@ -1,5 +1,4 @@
-FROM python:3.11.3-slim-buster
-# Error in Alpine-Image: Cargo, the Rust package manager, is not installed -> that's why i use the slim-buster image
+FROM python:3.11.4-alpine
 
 # set Workdir inside the image
 WORKDIR /home/ic20b050/app
