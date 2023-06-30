@@ -61,7 +61,7 @@ async def __connectDB():
     password = "xsmmsgbAMfIOIWPPBrsc"
     host = "192.168.0.2"
     port = "5432"
-    database = "ogd"
+    database = "OGD"
 
     return await asyncpg.connect(f'postgresql://{user}:{password}@{host}:{port}/{database}')
 
